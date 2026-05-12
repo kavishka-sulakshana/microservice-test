@@ -6,9 +6,8 @@ This project demonstrates how to design, run, and monitor scalable microservices
 
 ---
 
-## Simple Architecture Diagram
-
-<img width="1448" height="871" alt="Untitled Diagram-Page-1" src="https://github.com/user-attachments/assets/c2b3576f-9d6e-41f1-ab1e-f38f98c60478" />
+## HL Architecture Diagram
+<img width="1448" height="872" alt="Untitled Diagram-Page-1" src="https://github.com/user-attachments/assets/67b1ed4a-4fa2-4d49-b1e4-7db0bee24ef7" />
 
 
 ## 🏗️ Architecture Overview
