@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: payment
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8091/realms/microservice}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8091/realms/microservice/protocol/openid-connect/certs}
 
   datasource:
     url: jdbc:postgresql://localhost:5434/payment_db

@@ -85,6 +85,65 @@ services:
       retries: 10
       start_period: 10s
 
+  keycloak-db:
+    image: postgres:16
+    container_name: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak_pass
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.1
+    container_name: keycloak
+    command: ["start-dev", "--import-realm"]
+    ports:
+      - "8091:8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_pass
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: http://localhost:8091
+    volumes:
+      - ./keycloak/microservice-realm.json:/opt/keycloak/data/import/microservice-realm.json:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+
+  frontend:
+    image: node:22-alpine
+    container_name: frontend
+    working_dir: /app
+    command: ["sh", "-c", "npm ci && npm run dev"]
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_KEYCLOAK_URL: http://localhost:8091
+      VITE_KEYCLOAK_REALM: microservice
+      VITE_KEYCLOAK_CLIENT_ID: user-login
+      VITE_GATEWAY_URL: http://localhost:8080
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      keycloak:
+        condition: service_started
+      gateway:
+        condition: service_started
+
   registry:
     <<: *app-common
     container_name: registry
@@ -111,11 +170,15 @@ services:
         condition: service_healthy
       registry:
         condition: service_started
+      keycloak:
+        condition: service_started
 
     environment:
       GRADLE_USER_HOME: /home/gradle/.gradle
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://registry:8761/eureka
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KEYCLOAK_ISSUER_URI: http://localhost:8091/realms/microservice
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/microservice/protocol/openid-connect/certs
 
   order:
     <<: *app-common
@@ -134,6 +197,8 @@ services:
         condition: service_healthy
       registry:
         condition: service_started
+      keycloak:
+        condition: service_started
     environment:
       GRADLE_USER_HOME: /home/gradle/.gradle
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://registry:8761/eureka
@@ -141,6 +206,8 @@ services:
       SPRING_DATASOURCE_USERNAME: order_user
       SPRING_DATASOURCE_PASSWORD: order_pass
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KEYCLOAK_ISSUER_URI: http://localhost:8091/realms/microservice
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/microservice/protocol/openid-connect/certs
 
   payment:
     <<: *app-common
@@ -159,6 +226,8 @@ services:
         condition: service_healthy
       registry:
         condition: service_started
+      keycloak:
+        condition: service_started
     environment:
       GRADLE_USER_HOME: /home/gradle/.gradle
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://registry:8761/eureka
@@ -166,6 +235,8 @@ services:
       SPRING_DATASOURCE_USERNAME: payment_user
       SPRING_DATASOURCE_PASSWORD: payment_pass
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KEYCLOAK_ISSUER_URI: http://localhost:8091/realms/microservice
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/microservice/protocol/openid-connect/certs
 
   prometheus:
     image: prom/prometheus:latest
@@ -207,6 +278,8 @@ services:
 volumes:
   order_db_data:
   payment_db_data:
+  keycloak_db_data:
+  frontend_node_modules:
   registry-project-cache:
   gateway-project-cache:
   order-project-cache:

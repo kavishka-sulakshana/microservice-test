@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8091/realms/microservice}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8091/realms/microservice/protocol/openid-connect/certs}
   cloud:
     gateway:
       server:

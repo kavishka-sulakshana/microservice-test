@@ -3,6 +3,10 @@ HELP.md
 **/.gradle/
 build/
 **/build/
+node_modules/
+**/node_modules/
+dist/
+**/dist/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/

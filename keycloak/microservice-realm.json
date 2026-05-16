@@ -1,0 +1,92 @@
+{
+  "realm": "microservice",
+  "enabled": true,
+  "displayName": "Microservice Example",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "Human user allowed to call application APIs"
+      },
+      {
+        "name": "service",
+        "description": "Machine client allowed to call service APIs"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "user-login",
+      "name": "User Login",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:5173/",
+        "http://localhost:5173/*",
+        "http://127.0.0.1:5173/",
+        "http://127.0.0.1:5173/*",
+        "http://localhost:3000/",
+        "http://localhost:3000/*",
+        "http://localhost:8080/",
+        "http://localhost:8080/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://localhost:8080"
+      ],
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    },
+    {
+      "clientId": "service-client",
+      "name": "Service Client",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "local-service-secret-change-me",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    }
+  ],
+  "users": [
+    {
+      "username": "demo",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Demo",
+      "lastName": "User",
+      "email": "demo@example.com",
+      "realmRoles": [
+        "user"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "service-account-service-client",
+      "enabled": true,
+      "serviceAccountClientId": "service-client",
+      "realmRoles": [
+        "service"
+      ]
+    }
+  ]
+}
